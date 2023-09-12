@@ -1,7 +1,5 @@
 
-
 #import "bits.typ"
-
 
 #let crc(data, generator: "110101") = {
   generator = bits.from-str(generator)

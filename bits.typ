@@ -1,45 +1,13 @@
-
-#let _bmap = ("true":1, "false":0)
-
 #let pow = calc.pow.with(2)
 
 #let divmod(n) = (calc.quo(n, 2), calc.rem(n, 2))
 
 #let new(pad:0) = (false,) * calc.max(1, pad)
 
-#let from-int(n, pad:0) = {
-  let mod
-  let bin = ()
-  while n > 0 {
-    (n, mod) = divmod(n)
-    bin.push(mod)
-  }
-  if bin.len() < pad {
-    bin += (0,) * (pad - bin.len())
-  }
-  bin.rev().map((bit) => (false, true).at(bit))
-}
-
-#let from-str(s, pad:0) = {
-  let bin = ()
-  for c in s {
-    bin.push(c == "1")
-  }
-  bin
-}
-
-#let from(n, pad:0) = if type(n) == "array" {
-  if n.len() < pad {
-    n = (false, ) * (pad - n.len()) + n
-  }
-  return n
-} else if type(n) == "string" {
-  from-str(n, pad:pad)
-} else {
-  from-int(n, pad:pad)
-}
-
-#let to-int(b) = b.rev().enumerate().fold(0, (d, bit) => d + _bmap.at(repr(bit.at(1))) * pow(bit.at(0)))
+/// >>> bits.to-int(()) == 0
+/// >>> bits.to-int((true,)) == 1
+/// >>> bits.to-int((true,false)) == 2
+#let to-int(b) = b.rev().enumerate().fold(0, (d, bit) => d + if bit.at(1) {1} else {0} * pow(bit.at(0)))
 
 #let display(b, format: (b) => b) = format(b.map((bit) => if bit {"1"} else {"0"}).join())
 
@@ -96,4 +64,311 @@
 }
 #let most-sig-idx(b) = {
   return b.position((v) => v)
+}
+
+#let bits-map = (
+  (),
+  (true,),
+  (true,false),
+  (true,true),
+  (true,false,false),
+  (true,false,true),
+  (true,true,false),
+  (true,true,true),
+  (true,false,false,false),
+  (true,false,false,true),
+  (true,false,true,false),
+  (true,false,true,true),
+  (true,true,false,false),
+  (true,true,false,true),
+  (true,true,true,false),
+  (true,true,true,true),
+  (true,false,false,false,false),
+  (true,false,false,false,true),
+  (true,false,false,true,false),
+  (true,false,false,true,true),
+  (true,false,true,false,false),
+  (true,false,true,false,true),
+  (true,false,true,true,false),
+  (true,false,true,true,true),
+  (true,true,false,false,false),
+  (true,true,false,false,true),
+  (true,true,false,true,false),
+  (true,true,false,true,true),
+  (true,true,true,false,false),
+  (true,true,true,false,true),
+  (true,true,true,true,false),
+  (true,true,true,true,true),
+  (true,false,false,false,false,false),
+  (true,false,false,false,false,true),
+  (true,false,false,false,true,false),
+  (true,false,false,false,true,true),
+  (true,false,false,true,false,false),
+  (true,false,false,true,false,true),
+  (true,false,false,true,true,false),
+  (true,false,false,true,true,true),
+  (true,false,true,false,false,false),
+  (true,false,true,false,false,true),
+  (true,false,true,false,true,false),
+  (true,false,true,false,true,true),
+  (true,false,true,true,false,false),
+  (true,false,true,true,false,true),
+  (true,false,true,true,true,false),
+  (true,false,true,true,true,true),
+  (true,true,false,false,false,false),
+  (true,true,false,false,false,true),
+  (true,true,false,false,true,false),
+  (true,true,false,false,true,true),
+  (true,true,false,true,false,false),
+  (true,true,false,true,false,true),
+  (true,true,false,true,true,false),
+  (true,true,false,true,true,true),
+  (true,true,true,false,false,false),
+  (true,true,true,false,false,true),
+  (true,true,true,false,true,false),
+  (true,true,true,false,true,true),
+  (true,true,true,true,false,false),
+  (true,true,true,true,false,true),
+  (true,true,true,true,true,false),
+  (true,true,true,true,true,true),
+  (true,false,false,false,false,false,false),
+  (true,false,false,false,false,false,true),
+  (true,false,false,false,false,true,false),
+  (true,false,false,false,false,true,true),
+  (true,false,false,false,true,false,false),
+  (true,false,false,false,true,false,true),
+  (true,false,false,false,true,true,false),
+  (true,false,false,false,true,true,true),
+  (true,false,false,true,false,false,false),
+  (true,false,false,true,false,false,true),
+  (true,false,false,true,false,true,false),
+  (true,false,false,true,false,true,true),
+  (true,false,false,true,true,false,false),
+  (true,false,false,true,true,false,true),
+  (true,false,false,true,true,true,false),
+  (true,false,false,true,true,true,true),
+  (true,false,true,false,false,false,false),
+  (true,false,true,false,false,false,true),
+  (true,false,true,false,false,true,false),
+  (true,false,true,false,false,true,true),
+  (true,false,true,false,true,false,false),
+  (true,false,true,false,true,false,true),
+  (true,false,true,false,true,true,false),
+  (true,false,true,false,true,true,true),
+  (true,false,true,true,false,false,false),
+  (true,false,true,true,false,false,true),
+  (true,false,true,true,false,true,false),
+  (true,false,true,true,false,true,true),
+  (true,false,true,true,true,false,false),
+  (true,false,true,true,true,false,true),
+  (true,false,true,true,true,true,false),
+  (true,false,true,true,true,true,true),
+  (true,true,false,false,false,false,false),
+  (true,true,false,false,false,false,true),
+  (true,true,false,false,false,true,false),
+  (true,true,false,false,false,true,true),
+  (true,true,false,false,true,false,false),
+  (true,true,false,false,true,false,true),
+  (true,true,false,false,true,true,false),
+  (true,true,false,false,true,true,true),
+  (true,true,false,true,false,false,false),
+  (true,true,false,true,false,false,true),
+  (true,true,false,true,false,true,false),
+  (true,true,false,true,false,true,true),
+  (true,true,false,true,true,false,false),
+  (true,true,false,true,true,false,true),
+  (true,true,false,true,true,true,false),
+  (true,true,false,true,true,true,true),
+  (true,true,true,false,false,false,false),
+  (true,true,true,false,false,false,true),
+  (true,true,true,false,false,true,false),
+  (true,true,true,false,false,true,true),
+  (true,true,true,false,true,false,false),
+  (true,true,true,false,true,false,true),
+  (true,true,true,false,true,true,false),
+  (true,true,true,false,true,true,true),
+  (true,true,true,true,false,false,false),
+  (true,true,true,true,false,false,true),
+  (true,true,true,true,false,true,false),
+  (true,true,true,true,false,true,true),
+  (true,true,true,true,true,false,false),
+  (true,true,true,true,true,false,true),
+  (true,true,true,true,true,true,false),
+  (true,true,true,true,true,true,true),
+  (true,false,false,false,false,false,false,false),
+  (true,false,false,false,false,false,false,true),
+  (true,false,false,false,false,false,true,false),
+  (true,false,false,false,false,false,true,true),
+  (true,false,false,false,false,true,false,false),
+  (true,false,false,false,false,true,false,true),
+  (true,false,false,false,false,true,true,false),
+  (true,false,false,false,false,true,true,true),
+  (true,false,false,false,true,false,false,false),
+  (true,false,false,false,true,false,false,true),
+  (true,false,false,false,true,false,true,false),
+  (true,false,false,false,true,false,true,true),
+  (true,false,false,false,true,true,false,false),
+  (true,false,false,false,true,true,false,true),
+  (true,false,false,false,true,true,true,false),
+  (true,false,false,false,true,true,true,true),
+  (true,false,false,true,false,false,false,false),
+  (true,false,false,true,false,false,false,true),
+  (true,false,false,true,false,false,true,false),
+  (true,false,false,true,false,false,true,true),
+  (true,false,false,true,false,true,false,false),
+  (true,false,false,true,false,true,false,true),
+  (true,false,false,true,false,true,true,false),
+  (true,false,false,true,false,true,true,true),
+  (true,false,false,true,true,false,false,false),
+  (true,false,false,true,true,false,false,true),
+  (true,false,false,true,true,false,true,false),
+  (true,false,false,true,true,false,true,true),
+  (true,false,false,true,true,true,false,false),
+  (true,false,false,true,true,true,false,true),
+  (true,false,false,true,true,true,true,false),
+  (true,false,false,true,true,true,true,true),
+  (true,false,true,false,false,false,false,false),
+  (true,false,true,false,false,false,false,true),
+  (true,false,true,false,false,false,true,false),
+  (true,false,true,false,false,false,true,true),
+  (true,false,true,false,false,true,false,false),
+  (true,false,true,false,false,true,false,true),
+  (true,false,true,false,false,true,true,false),
+  (true,false,true,false,false,true,true,true),
+  (true,false,true,false,true,false,false,false),
+  (true,false,true,false,true,false,false,true),
+  (true,false,true,false,true,false,true,false),
+  (true,false,true,false,true,false,true,true),
+  (true,false,true,false,true,true,false,false),
+  (true,false,true,false,true,true,false,true),
+  (true,false,true,false,true,true,true,false),
+  (true,false,true,false,true,true,true,true),
+  (true,false,true,true,false,false,false,false),
+  (true,false,true,true,false,false,false,true),
+  (true,false,true,true,false,false,true,false),
+  (true,false,true,true,false,false,true,true),
+  (true,false,true,true,false,true,false,false),
+  (true,false,true,true,false,true,false,true),
+  (true,false,true,true,false,true,true,false),
+  (true,false,true,true,false,true,true,true),
+  (true,false,true,true,true,false,false,false),
+  (true,false,true,true,true,false,false,true),
+  (true,false,true,true,true,false,true,false),
+  (true,false,true,true,true,false,true,true),
+  (true,false,true,true,true,true,false,false),
+  (true,false,true,true,true,true,false,true),
+  (true,false,true,true,true,true,true,false),
+  (true,false,true,true,true,true,true,true),
+  (true,true,false,false,false,false,false,false),
+  (true,true,false,false,false,false,false,true),
+  (true,true,false,false,false,false,true,false),
+  (true,true,false,false,false,false,true,true),
+  (true,true,false,false,false,true,false,false),
+  (true,true,false,false,false,true,false,true),
+  (true,true,false,false,false,true,true,false),
+  (true,true,false,false,false,true,true,true),
+  (true,true,false,false,true,false,false,false),
+  (true,true,false,false,true,false,false,true),
+  (true,true,false,false,true,false,true,false),
+  (true,true,false,false,true,false,true,true),
+  (true,true,false,false,true,true,false,false),
+  (true,true,false,false,true,true,false,true),
+  (true,true,false,false,true,true,true,false),
+  (true,true,false,false,true,true,true,true),
+  (true,true,false,true,false,false,false,false),
+  (true,true,false,true,false,false,false,true),
+  (true,true,false,true,false,false,true,false),
+  (true,true,false,true,false,false,true,true),
+  (true,true,false,true,false,true,false,false),
+  (true,true,false,true,false,true,false,true),
+  (true,true,false,true,false,true,true,false),
+  (true,true,false,true,false,true,true,true),
+  (true,true,false,true,true,false,false,false),
+  (true,true,false,true,true,false,false,true),
+  (true,true,false,true,true,false,true,false),
+  (true,true,false,true,true,false,true,true),
+  (true,true,false,true,true,true,false,false),
+  (true,true,false,true,true,true,false,true),
+  (true,true,false,true,true,true,true,false),
+  (true,true,false,true,true,true,true,true),
+  (true,true,true,false,false,false,false,false),
+  (true,true,true,false,false,false,false,true),
+  (true,true,true,false,false,false,true,false),
+  (true,true,true,false,false,false,true,true),
+  (true,true,true,false,false,true,false,false),
+  (true,true,true,false,false,true,false,true),
+  (true,true,true,false,false,true,true,false),
+  (true,true,true,false,false,true,true,true),
+  (true,true,true,false,true,false,false,false),
+  (true,true,true,false,true,false,false,true),
+  (true,true,true,false,true,false,true,false),
+  (true,true,true,false,true,false,true,true),
+  (true,true,true,false,true,true,false,false),
+  (true,true,true,false,true,true,false,true),
+  (true,true,true,false,true,true,true,false),
+  (true,true,true,false,true,true,true,true),
+  (true,true,true,true,false,false,false,false),
+  (true,true,true,true,false,false,false,true),
+  (true,true,true,true,false,false,true,false),
+  (true,true,true,true,false,false,true,true),
+  (true,true,true,true,false,true,false,false),
+  (true,true,true,true,false,true,false,true),
+  (true,true,true,true,false,true,true,false),
+  (true,true,true,true,false,true,true,true),
+  (true,true,true,true,true,false,false,false),
+  (true,true,true,true,true,false,false,true),
+  (true,true,true,true,true,false,true,false),
+  (true,true,true,true,true,false,true,true),
+  (true,true,true,true,true,true,false,false),
+  (true,true,true,true,true,true,false,true),
+  (true,true,true,true,true,true,true,false),
+  (true,true,true,true,true,true,true,true)
+)
+
+/// >>> bits.from-int(0) == ()
+/// >>> bits.from-int(0, pad:8) == (false,) * 8
+/// >>> bits.from-int(1) == (true,)
+/// >>> bits.from-int(1, pad:8) == (false,) * 7 + (true,)
+/// >>> bits.from-int(2) == (true, false)
+/// >>> bits.from-int(254, pad:8) == (true,) * 7 + (false,)
+/// >>> bits.from-int(255, pad:8) == (true,) * 8
+#let from-int(n, pad:0) = {
+  let bin = ()
+  if n < 256 {
+    bin = bits-map.at(n)
+  } else {
+    let mod
+    while n > 0 {
+      (n, mod) = divmod(n)
+      bin.push(mod)
+    }
+    bin = bin.rev().map((bit) => (false, true).at(bit))
+  }
+  if bin.len() < pad {
+    bin = (false,) * (pad - bin.len()) + bin
+  }
+  return bin
+}
+
+/// >>> bits.from-str("0000") == (false,) * 4
+/// >>> bits.from-str("101010") == (true, false) * 3
+/// >>> bits.from-str("100000000") == (true,) + (false,) * 8
+/// >>> bits.from-str("0011011101") == (false,false,true,true,false,true,true,true,false,true)
+#let from-str(s, pad:0) = {
+  let bin = ()
+  for c in s {
+    bin.push(c == "1")
+  }
+  bin
+}
+
+#let from(n, pad:0) = if type(n) == "array" {
+  if n.len() < pad {
+    n = (false, ) * (pad - n.len()) + n
+  }
+  return n
+} else if type(n) == "string" {
+  from-str(n, pad:pad)
+} else {
+  from-int(n, pad:pad)
 }
