@@ -28,7 +28,7 @@ src = "README.md"
 search = '\(v{current_version}\)'
 [[file]]
 src = "README.md"
-search = "finite:{current_version}"
+search = "codetastic:{current_version}"
 
 [[before_commit]]
 name = "compile manual"
