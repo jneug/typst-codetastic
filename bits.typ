@@ -1,3 +1,6 @@
+
+// TODO: This probably should be improved / optimized.
+
 #let pow = calc.pow.with(2)
 
 #let divmod(n) = (calc.quo(n, 2), calc.rem(n, 2))

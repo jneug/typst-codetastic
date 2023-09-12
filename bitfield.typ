@@ -1,6 +1,8 @@
 
 #import "bits.typ"
 
+// TODO: This probably should be improved / optimized.
+
 
 /// Creates a new bitfield of the given dimensions and
 /// initializes its values with the given init function.
