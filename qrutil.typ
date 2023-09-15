@@ -479,6 +479,10 @@
 #let exp(i) = qrluts.exp.at(i)
 #let log(i) = qrluts.log.at(i)
 
+#let bit(x, y, n) = {
+  mod2(calc.quo(x, n) + calc.quo(y, n)) * n
+}
+
 /// >>> qrutil.gf-add(0, 0) == 0
 /// >>> qrutil.gf-add(0, 1) == 1
 /// >>> qrutil.gf-add(1, 0) == 1
@@ -486,14 +490,15 @@
 /// >>> qrutil.gf-add(2, 1) == 3
 /// >>> qrutil.gf-add(2, 3) == 1
 /// >>> qrutil.gf-add(55, 87) == 96
-#let gf-add(x, y) = {
+#let gf-add(a, b) = {
   // TODO: This is stupid! How can this be made faster?
-  return bits.to-int(
-    bits.xor(
-      bits.from-int(x, pad:8),
-      bits.from-int(y, pad:8)
-    )
-  )
+  // return bits.to-int(
+  //   bits.xor(
+  //     bits.from-int(x, pad:8),
+  //     bits.from-int(y, pad:8)
+  //   )
+  // )
+  return mod2(a+b) + bit(a,b,2) + bit(a,b,4) + bit(a,b,8) + bit(a,b,16) + bit(a,b,32) + bit(a,b,64) + bit(a,b,128)
 }
 
 /// >>> qrutil.gf-mul(0, 255) == 0
