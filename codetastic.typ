@@ -538,7 +538,8 @@
   mask: auto,
   size: auto,
   width: auto,
-  colors: (white, black)
+  colors: (white, black),
+  debug: false
 ) = {
   import "qrutil.typ"
 
@@ -573,44 +574,8 @@
   // Create empty matrix
   let size = qrutil.size(version)
   let field = bitfield.new(size, size)
-
-  // Add finder patterns
-  for i in range(7) {
-    for j in range(7) {
-      let v = qrutil.finder.at(i).at(j)
-      field.at(i).at(j) = v
-      field.at(i).at(size - j - 1) = v
-      field.at(size - i - 1).at(j) = v
-    }
-  }
-  // for pos in ((0, 0), (0, size - 7), (size - 7, 0)) {
-  //   field = bitfield.compose(
-  //     field, qr-utils.finder,
-  //     at:pos
-  //   )
-  // }
-
-  // Add timing patterns
-  for i in range(7, size - 7) {
-    field.at(6).at(i) = calc.even(i)
-    field.at(i).at(6) = calc.even(i)
-  }
-
-  // Add alignment patterns
-  let alignment-locations = qrutil.alignment-positions(version)
-  for i in alignment-locations {
-    for j in alignment-locations {
-      if qrutil.is-valid-alignment(i, j, size) {
-        field = bitfield.compose(
-          field, qrutil.alignment,
-          at:(i,j), center:true
-        )
-      }
-    }
-  }
-
-  // Add dark module
-  field.at(size - 8).at(8) = true
+  // Reserve bits
+  field = qrutil.reserve-bits(field, version)
 
   // Add data in zig-zag pattern
   let dir = -1
@@ -620,7 +585,7 @@
 
     let x = 0
     while x < 8 {
-      if not qrutil.is-reserved(i, j, version) {
+      if not field.at(i).at(j) {
         field.at(i).at(j) = b.at(x)
         x += 1
       }
@@ -659,11 +624,11 @@
   if mask != none {
     for i in range(size) {
       for j in range(size) {
-        if not qrutil.is-reserved(i, j, version) {
+        //if not qrutil.is-reserved(i, j, version) {
           field.at(i).at(j) = qrutil.apply-mask(
             i, j, field.at(i).at(j), mask
           )
-        }
+        //}
       }
     }
   } else {
@@ -673,34 +638,7 @@
     mask = 0
   }
 
-  // Add format information
-  let fmt = qrutil.format-bits(ecl, mask)
-  for (i, b) in fmt.enumerate() {
-    if i < 7 {
-      field.at(size - i - 1).at(8) = b
-      if i > 5 { i+= 1 }
-      field.at(8).at(i) = b
-    } else {
-      field.at(8).at(size - 15 + i) = b
-      if i > 8 { i += 1 }
-      field.at(15 - i).at(8) = b
-    }
-  }
-
-  // Adding version information
-  if version >= 7 {
-    let fmt = qrutil.version-bits(version)
-
-    for i in range(6) {
-      field.at(size -  9).at(5 - i) = fmt.at(i*3)
-      field.at(size - 10).at(5 - i) = fmt.at(i*3+1)
-      field.at(size - 11).at(5 - i) = fmt.at(i*3+2)
-
-      field.at(5 - i).at(size -  9) = fmt.at(i*3)
-      field.at(5 - i).at(size - 10) = fmt.at(i*3+1)
-      field.at(5 - i).at(size - 11) = fmt.at(i*3+2)
-    }
-  }
+  field = qrutil.set-reserved-bits(field, version, ecl, mask)
 
   // calculate module size
   if width != auto {
@@ -710,6 +648,9 @@
     module-size = 2mm
   }
 
+  if debug {
+    [Version: #version, Ecl: #ecl, Mode: #mode, Mask: #mask]
+  }
   // Draw modules
   util.draw-matrix(
     field,

@@ -237,11 +237,11 @@
 
 /// Encodes numeric data (only characters "0" to "9") into byte codewords.
 ///
-/// >>> qrutil.encode-numeric("0", ()) == ((), (false, false, false, false))
-/// >>> qrutil.encode-numeric("1", (false, false, true, false)) == ((33,), ())
-/// >>> qrutil.encode-numeric("14", ()) == ((), (false, false, false, true, true, true, false))
-/// >>> qrutil.encode-numeric("144", ()) == ((36,), (false, false))
-/// >>> qrutil.encode-numeric("144", (true, false, false, false)) == ((130,), (false, true, false, false, false, false))
+/// >>> qrutil.encode-numeric("0", ()) == (bytes(()), (false, false, false, false))
+/// >>> qrutil.encode-numeric("1", (false, false, true, false)) == (bytes((33,)), ())
+/// >>> qrutil.encode-numeric("14", ()) == (bytes(()), (false, false, false, true, true, true, false))
+/// >>> qrutil.encode-numeric("144", ()) == (bytes((36,)), (false, false))
+/// >>> qrutil.encode-numeric("144", (true, false, false, false)) == (bytes((130,)), (false, true, false, false, false, false))
 #let encode-numeric(nums, buffer) = {
   let code = ()
   let len = nums.len()
@@ -262,7 +262,7 @@
     }
   }
 
-  return (code, buffer)
+  return (bytes(code), buffer)
 }
 
 #let alphnum-char-codes = (
@@ -299,12 +299,12 @@
     }
   }
 
-  return (code, buffer)
+  return (bytes(code), buffer)
 }
 
 #let ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
-/// >>> qrutil.encode-byte("https://www.qrcode.com/", bits.from-str("010000010111")) == ((65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210), (true, true, true, true))
+/// >>> qrutil.encode-byte("https://www.qrcode.com/", bits.from-str("010000010111")) == (bytes((65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210)), (true, true, true, true))
 #let encode-byte(chars, buffer) = {
   let code = ()
   let len = chars.len()
@@ -318,16 +318,16 @@
     }
   }
 
-  return (code, buffer)
+  return (bytes(code), buffer)
 }
 
 /// Encodes `data` into byte codewords.
 ///
-/// >>> qrutil.encode("HELLO WORLD", 1, "q", mode:1) == (32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236)
-/// >>> qrutil.encode("HELLO WORLD", 7, "l", mode:1) == (32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 73
-/// >>> qrutil.encode("HELLO WORLD", 7, "h", mode:1) == (32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 28
-/// >>> qrutil.encode("https://www.qrcode.com/", 2, "m", mode:2) == (65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236)
-/// >>> qrutil.encode("https://www.qrcode.com/", 7, "m", mode:2) == (65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236) + (17, 236)*49
+/// >>> qrutil.encode("HELLO WORLD", 1, "q", mode:1) == bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236))
+/// >>> qrutil.encode("HELLO WORLD", 7, "l", mode:1) == bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 73)
+/// >>> qrutil.encode("HELLO WORLD", 7, "h", mode:1) == bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 28)
+/// >>> qrutil.encode("https://www.qrcode.com/", 2, "m", mode:2) == bytes((65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236))
+/// >>> qrutil.encode("https://www.qrcode.com/", 7, "m", mode:2) == bytes((65, 118, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236) + (17, 236)*49)
 #let encode(data, version, ecl, mode:auto) = {
   if mode == auto {
     mode = best-mode(data)
@@ -355,7 +355,7 @@
   }
 
   while buffer.len() >= 8 {
-    codewords.push( bits.to-int(buffer.slice(0,8)) )
+    codewords += bytes( (bits.to-int(buffer.slice(0,8)),) )
     buffer = buffer.slice(8)
   }
 
@@ -365,7 +365,7 @@
   let pad-words = (236, 17)
   diff-cw = cw-count - codewords.len()
   for i in range(cw-count - codewords.len()) {
-    codewords.push( pad-words.at( mod2(i) ) )
+    codewords += bytes( (pad-words.at( mod2(i) ),) )
   }
 
   assert.eq(codewords.len(), cw-count)
@@ -390,7 +390,8 @@
   return qrluts.alignments.at(version - 1)
 }
 
-/// Checks if a position is a valid position for an alignemnt pattern.
+
+/// Checks if a position is a valid position for an alignment pattern.
 ///
 /// >>> not qrutil.is-valid-alignment(0, 0, 21)
 /// >>> not qrutil.is-valid-alignment(36, 0, 41)
@@ -471,6 +472,143 @@
   "10001",
   "11111"
 ).map(bits.from-str)
+
+#let reserve-bits(field, version) = {
+  let size = size(version)
+
+  // Reserve finder patterns
+  for i in range(8) {
+    for j in range(8) {
+      field.at(i).at(j) = true
+      field.at(i).at(size - j - 1) = true
+      field.at(size - i - 1).at(j) = true
+    }
+  }
+
+  // Reserve spacing around finder
+
+  // Reserve timing patterns
+  for i in range(7, size - 7) {
+    field.at(6).at(i) = true
+    field.at(i).at(6) = true
+  }
+
+  // reserve alignment patterns
+  let alignment-locations = alignment-positions(version)
+  for i in alignment-locations {
+    for j in alignment-locations {
+      if is-valid-alignment(i, j, size) {
+        for k in range(5) {
+          for l in range(5) {
+            field.at(i - 2 + k).at(j - 2 + l) = true
+          }
+        }
+      }
+    }
+  }
+
+  // Reserve dark module
+  field.at(size - 8).at(8) = true
+
+  // AReserve format information
+  for i in range(15) {
+    if i < 7 {
+      field.at(size - i - 1).at(8) = true
+      if i > 5 { i+= 1 }
+      field.at(8).at(i) = true
+    } else {
+      field.at(8).at(size - 15 + i) = true
+      if i > 8 { i += 1 }
+      field.at(15 - i).at(8) = true
+    }
+  }
+
+  // Reserve version information
+  if version >= 7 {
+    for i in range(6) {
+      field.at(size -  9).at(5 - i) = true
+      field.at(size - 10).at(5 - i) = true
+      field.at(size - 11).at(5 - i) = true
+
+      field.at(5 - i).at(size -  9) = true
+      field.at(5 - i).at(size - 10) = true
+      field.at(5 - i).at(size - 11) = true
+    }
+  }
+
+  return field
+}
+
+#let set-reserved-bits(field, version, ecl, mask) = {
+  let size = size(version)
+
+  // Add finder patterns
+  for i in range(8) {
+    for j in range(8) {
+      let v = false
+      if i < 7 and j < 7 {
+        v = finder.at(i).at(j)
+      }
+      field.at(i).at(j) = v
+      field.at(i).at(size - j - 1) = v
+      field.at(size - i - 1).at(j) = v
+    }
+  }
+
+  // Add timing patterns
+  for i in range(7, size - 7) {
+    field.at(6).at(i) = calc.even(i)
+    field.at(i).at(6) = calc.even(i)
+  }
+
+  // Add alignment patterns
+  let alignment-locations = alignment-positions(version)
+  for i in alignment-locations {
+    for j in alignment-locations {
+      if is-valid-alignment(i, j, size) {
+        for k in range(5) {
+          for l in range(5) {
+            field.at(i - 2 + k).at(j - 2 - l) = alignment.at(k).at(l)
+          }
+        }
+      }
+    }
+  }
+
+  // Add dark module
+  field.at(size - 8).at(8) = true
+
+  // Add format information
+  let fmt = format-bits(ecl, mask)
+  for (i, b) in fmt.enumerate() {
+    if i < 7 {
+      field.at(size - i - 1).at(8) = b
+      if i > 5 { i+= 1 }
+      field.at(8).at(i) = b
+    } else {
+      field.at(8).at(size - 15 + i) = b
+      if i > 8 { i += 1 }
+      field.at(15 - i).at(8) = b
+    }
+  }
+
+  // Adding version information
+  if version >= 7 {
+    let fmt = version-bits(version)
+
+    for i in range(6) {
+      field.at(size -  9).at(5 - i) = fmt.at(i*3)
+      field.at(size - 10).at(5 - i) = fmt.at(i*3+1)
+      field.at(size - 11).at(5 - i) = fmt.at(i*3+2)
+
+      field.at(5 - i).at(size -  9) = fmt.at(i*3)
+      field.at(5 - i).at(size - 10) = fmt.at(i*3+1)
+      field.at(5 - i).at(size - 11) = fmt.at(i*3+2)
+    }
+  }
+
+  return field
+}
 
 
 // =================================
@@ -666,19 +804,19 @@
 /// Computes the reed solomon error correction codewords
 /// for the given data codewords and error correction level.
 ///
-/// >>> qrutil.rs-codewords((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17), 1, "m") == (196, 35, 39, 119, 235, 215, 231, 226, 93, 23)
-/// >>> qrutil.rs-codewords((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17)*34, 7, "l") == (91, 2, 102, 15, 224, 203, 242, 110, 15, 230, 29, 12, 200, 155, 139, 51, 72, 68, 172, 13)
-/// >>> qrutil.rs-codewords((236, 17)*39, 7, "l") == (44, 103, 50, 234, 161, 185, 11, 175, 110, 82, 242, 131, 109, 162, 175, 240, 131, 250, 74, 60)
-/// >>> qrutil.rs-codewords((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17), 7, "m") == (164, 98, 130, 114, 171, 107, 27, 65, 50, 175, 129, 240, 155, 77, 250, 132, 137, 165)
-/// >>> qrutil.rs-codewords((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17), 7, "h") == (163, 10, 238, 68, 145, 138, 74, 25, 128, 199, 247, 20, 104, 9, 102, 110, 101, 62, 244, 230, 53, 30, 28, 155, 231, 64)
-/// >>> qrutil.rs-codewords((16, 32, 12, 86, 97, 128, 236, 17, 236, 17, 236, 17, 236, 17, 236, 17), 1, "m") == (165, 36, 212, 193, 237, 54, 199, 135, 44, 85)
-/// >>> qrutil.rs-codewords((65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236), 2, "m") == (43, 26, 183, 84, 208, 221, 49, 187, 191, 133, 63, 208, 63, 44, 207, 202)
+/// >>> qrutil.rs-codewords(bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17)), 1, "m") == bytes((196, 35, 39, 119, 235, 215, 231, 226, 93, 23))
+/// >>> qrutil.rs-codewords(bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17)*34), 7, "l") == bytes((91, 2, 102, 15, 224, 203, 242, 110, 15, 230, 29, 12, 200, 155, 139, 51, 72, 68, 172, 13))
+/// >>> qrutil.rs-codewords(bytes((236, 17)*39), 7, "l") == bytes((44, 103, 50, 234, 161, 185, 11, 175, 110, 82, 242, 131, 109, 162, 175, 240, 131, 250, 74, 60))
+/// >>> qrutil.rs-codewords(bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17)), 7, "m") == bytes((164, 98, 130, 114, 171, 107, 27, 65, 50, 175, 129, 240, 155, 77, 250, 132, 137, 165))
+/// >>> qrutil.rs-codewords(bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17)), 7, "h") == bytes((163, 10, 238, 68, 145, 138, 74, 25, 128, 199, 247, 20, 104, 9, 102, 110, 101, 62, 244, 230, 53, 30, 28, 155, 231, 64))
+/// >>> qrutil.rs-codewords(bytes((16, 32, 12, 86, 97, 128, 236, 17, 236, 17, 236, 17, 236, 17, 236, 17)), 1, "m") == bytes((165, 36, 212, 193, 237, 54, 199, 135, 44, 85))
+/// >>> qrutil.rs-codewords(bytes((65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236)), 2, "m") == bytes((43, 26, 183, 84, 208, 221, 49, 187, 191, 133, 63, 208, 63, 44, 207, 202))
 #let rs-codewords(data-codewords, version, ecl) = {
   let cw-count = ec-codewords(version, ecl)
   let gen = rs-generator(cw-count)
   let r = gf-poly-rem(array(data-codewords) + (0,) * cw-count, gen)
 
-  return r
+  return bytes(r)
 }
 
 
@@ -702,14 +840,12 @@
   }
 }
 
-/// >>> qrutil.generate-blocks((65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236), 2, "m") == (65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236, 43, 26, 183, 84, 208, 221, 49, 187, 191, 133, 63, 208, 63, 44, 207, 202)
-/// >>> qrutil.generate-blocks((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 73, 7, "l") == (32, 236, 91, 17, 11, 236, 120, 17, 209, 236, 114, 17, 220, 236, 77, 17, 67, 236, 64, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 91, 44, 2, 103, 102, 50, 15, 234, 224, 161, 203, 185, 242, 11, 110, 175, 15, 110, 230, 82, 29, 242, 12, 131, 200, 109, 155, 162, 139, 175, 51, 240, 72, 131, 68, 250, 172, 74, 13, 60)
+/// >>> qrutil.generate-blocks(bytes((65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236)), 2, "m") == bytes((65, 166, 135, 71, 71, 7, 51, 162, 242, 247, 119, 119, 114, 231, 23, 38, 54, 246, 70, 82, 230, 54, 246, 210, 240, 236, 17, 236, 43, 26, 183, 84, 208, 221, 49, 187, 191, 133, 63, 208, 63, 44, 207, 202))
+/// >>> qrutil.generate-blocks(bytes((32, 91, 11, 120, 209, 114, 220, 77, 67, 64) + (236, 17) * 73), 7, "l") == bytes((32, 236, 91, 17, 11, 236, 120, 17, 209, 236, 114, 17, 220, 236, 77, 17, 67, 236, 64, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 236, 236, 17, 17, 91, 44, 2, 103, 102, 50, 15, 234, 224, 161, 203, 185, 242, 11, 110, 175, 15, 110, 230, 82, 29, 242, 12, 131, 200, 109, 155, 162, 139, 175, 51, 240, 72, 131, 68, 250, 172, 74, 13, 60))
 #let generate-blocks(codewords, version, ecl) = {
-  codewords = array(codewords)
-
   let block-sizes = block-sizes(version, ecl)
   if block-sizes.len() == 1 {
-    return codewords + array(rs-codewords(codewords, version, ecl))
+    return codewords + rs-codewords(codewords, version, ecl)
   } else {
     let blocks = ()
     let ec-codewords = ()
@@ -725,12 +861,13 @@
     }
 
     // generate interleaved data
-    codewords = ()
+    codewords = bytes(())
     let max = calc.max(..block-sizes)
     for i in range(max) {
       for b in blocks {
         if i < b.len() {
-          codewords.push( b.at(i) )
+          //codewords.push( b.at(i) )
+          codewords += bytes( (b.at(i),) )
         }
       }
     }
@@ -738,7 +875,8 @@
     max = ec-codewords.first().len()
     for i in range(max) {
       for ec in ec-codewords {
-        codewords.push( ec.at(i) )
+        // codewords.push( ec.at(i) )
+        codewords += bytes( (ec.at(i),) )
       }
     }
 
@@ -768,8 +906,6 @@
 #let check-mask(field, mask, version) = {
   let size = size(version)
 
-  let mask-count = masks.len()
-
   let penalties = (0,0,0,0)
   let cond1-runs = (0, 0)
   let cond2-win = ()
@@ -782,13 +918,10 @@
 
     for j in range(size) {
       let bits = (field.at(i).at(j),  field.at(j).at(i))
-      let masked-bits = bits
-      if not is-reserved(i, j, version) {
-        masked-bits.at(0) = apply-mask(i, j, masked-bits.at(0), mask)
-      }
-      if not is-reserved(j, i, version) {
-        masked-bits.at(1) = apply-mask(j, i, masked-bits.at(1), mask)
-      }
+      let masked-bits = (
+        apply-mask(i, j, bits.at(0), mask),
+        apply-mask(j, i, bits.at(1), mask)
+      )
 
       // Condition 1
       // Check rows and cols for runs of 5 or more
