@@ -711,12 +711,10 @@
   }
 
   // Draw modules
-  cetz.canvas({
-    util.draw-matrix(
-      field,
-      quiet-zone: quiet-zone,
-      size: module-size,
-      bg: bg, fg: fg
-    )
-  })
+  util.draw-matrix(
+    field,
+    quiet-zone: quiet-zone,
+    size: module-size,
+    bg: bg, fg: fg
+  )
 }

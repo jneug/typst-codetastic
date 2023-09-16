@@ -1,6 +1,5 @@
 
 #import "@preview/cetz:0.1.1"
-#import cetz.draw: rect
 
 
 #let to-arr(code) = {
@@ -51,6 +50,8 @@
 }
 
 #let draw-bars(bits, width:0.264mm, height:18.28mm, bg: white, fg: black) = {
+  import cetz.draw: rect
+
   // Draw background rect to set fixed size
   rect((0,0), (bits.len() * width, height), fill:bg, stroke:none, name:"code-bg")
 
@@ -86,6 +87,7 @@
 }
 
 #let draw-rect(at, width, height, fill: white, ..style) = {
+
   rect(
     at,
     (rel:(width,height)),
@@ -104,26 +106,40 @@
 #let draw-matrix(
   bitfield,
   quiet-zone: 4,
-  size: 3mm,
+  size: 1mm,
   bg: white,
   fg: black
 ) = {
   let (w, h) = (bitfield.first().len(), bitfield.len())
   let (x, y) = (quiet-zone, quiet-zone)
+  let (width, height) = (
+    (w+2*quiet-zone) * size,
+    (h+2*quiet-zone) * size
+  )
 
-  // Draw background rect to set fixed size
-  rect((0,0), ((w+2*quiet-zone) * size, (h+2*quiet-zone) * -size), fill:bg, stroke:none, name:"code-bg")
+  let module(i, j) = place(
+    dx: (x + j) * size,
+    dy: (y + i) * size,
+    square(size:size, fill:fg, stroke:none)
+  )
 
-  // Draw modules
-  for i in range(h) {
-    for j in range(w) {
-      if bitfield.at(i).at(j) {
-        rect(
-          ((x + j) * size, (y + i) * -size),
-          (rel:(size, -size)),
-          fill:fg, stroke:none
-        )
+  box(
+    width: width,
+    height: height,
+    // baseline: (h+2*quiet-zone) * size,
+    {
+      place(rect(
+        width: width, height: height,
+        fill:bg, stroke:none
+      ))
+
+      for i in range(h) {
+        for j in range(w) {
+          if bitfield.at(i).at(j) {
+            module(i, j)
+          }
+        }
       }
     }
-  }
+  )
 }
