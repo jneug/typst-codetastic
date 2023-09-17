@@ -103,7 +103,7 @@
 /// `bits.at(0).at(0)` is located at coordinate `(0,0)` and
 /// `bits.at(-1).at(-1)` is located at the last coordinate
 /// on the bottom right.
-#let draw-matrix(
+#let draw-modules(
   bitfield,
   quiet-zone: 4,
   size: 1mm,
@@ -126,7 +126,7 @@
   box(
     width: width,
     height: height,
-    // baseline: (h+2*quiet-zone) * size,
+    baseline: quiet-zone * size,
     {
       place(rect(
         width: width, height: height,
