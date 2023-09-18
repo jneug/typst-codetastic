@@ -906,36 +906,46 @@
 #let check-mask(field, mask, version) = {
   let size = size(version)
 
-  let penalties = (0,0,0,0)
-  let cond1-runs = (0, 0)
-  let cond2-win = ()
-  let cond3-pattern1 = bits.from-str("00001011101")
-  let cond3-pattern2 = bits.from-str("10111010000")
+  // Create masked code
+  let mask-func = masks.at(mask)
+  for i in range(size) {
+    for j in range(size) {
+      field.at(i).at(j) = (mask-func)(i, j) != field.at(i).at(j)
+    }
+  }
+
+  let (p1, p2, p3, p4) = (0, 0, 0, 0)
+  let (r1, r2) = (0, 0)
   let cond4-n = 0
+
+  let check-patterns( b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11 ) = {
+    return (not (b1 or b2 or b3 or b4 or b6 or b10) and (b5 and b7 and b8 and b9 and b11)) or (not (b2 or b6 or b8 or b9 or b10 or b11) and (b1 and b3 and b4 and b5 and b7))
+  }
 
   for i in range(size) {
     let cond3-win = ((), ())
 
     for j in range(size) {
-      let bits = (field.at(i).at(j),  field.at(j).at(i))
-      let masked-bits = (
-        apply-mask(i, j, bits.at(0), mask),
-        apply-mask(j, i, bits.at(1), mask)
-      )
+      let (bit1, bit2) = (field.at(i).at(j),  field.at(j).at(i))
 
       // Condition 1
       // Check rows and cols for runs of 5 or more
       // modules of same value
-      for x in (0, 1) {
-        if masked-bits.at(x) {
-          cond1-runs.at(x) += 1
-        } else {
-          if cond1-runs.at(x) >= 5 {
-            penalties.at(0) += 3 + calc.max(0,
-              (cond1-runs.at(x) - 5))
-            cond1-runs.at(x) = 0
-          }
+      if bit1 {
+        r1 += 1
+      } else {
+        if r1 >= 5 {
+          p1 += 3 + calc.max(0, (r1 - 5))
         }
+        r1 = 0
+      }
+      if bit2 {
+        r2 += 1
+      } else {
+        if r2 >= 5 {
+          p1 += 3 + calc.max(0, (r2 - 5))
+        }
+        r2 = 0
       }
 
       // Condition 2
@@ -943,44 +953,39 @@
       // with (i,j) in the top right and check for
       // the same value.
       if i > 0 and j > 0 {
-        if cond2-win.len() < 4 {
-          cond2-win = (
-            masked-bits.at(0),
-            apply-mask(i - 1, j, field.at(i - 1).at(j  ), mask),
-            apply-mask(i, j - 1, field.at(i  ).at(j - 1), mask),
-            apply-mask(i - 1, j - 1, field.at(i - 1).at(j - 1), mask)
-          )
-        } else {
-          cond2-win = (
-            masked-bits.at(0),
-            apply-mask(i - 1, j, field.at(i - 1).at(j), mask),
-            cond2-win.at(0),
-            cond2-win.at(1)
-          )
-        }
-        // Check for blocks of same color
-        if cond2-win.all(x => x==true) or cond2-win.all(x => x==false) {
-          penalties.at(1) += 3
+        if bit1 == field.at(i - 1).at(j - 1) and bit1 == field.at(i - 1).at(j) and bit1 == field.at(i).at(j - 1) {
+          p2 += 3
         }
       }
 
       // Condition 3
       // Use running windows for rows and columns
       // to check against the predefined patterns.
-      for x in (0, 1) {
-        if cond3-win.at(x).len() < 11 {
-          cond3-win.at(x).push( masked-bits.at(x) )
-        } else {
-          cond3-win.at(x) = cond3-win.at(x).slice(1) + (masked-bits.at(x),)
-        }
-        if cond3-win.at(x) == cond3-pattern1 or cond3-win.at(x) == cond3-pattern2 {
-          penalties.at(2) += 40
-        }
-      }
+      // TODO: Optimize this
+      // if j > 10 {
+      //   if check-patterns(field.at(i).at(j - 10),
+      //       field.at(i).at(j - 9), field.at(i).at(j - 8),
+      //       field.at(i).at(j - 7), field.at(i).at(j - 6),
+      //       field.at(i).at(j - 5), field.at(i).at(j - 4),
+      //       field.at(i).at(j - 3), field.at(i).at(j - 2),
+      //       field.at(i).at(j - 1), field.at(i).at(j - 0)) {
+      //     penalties.at(2) += 40
+      //   }
+      // }
+      // if i > 10 {
+      //   if check-patterns(field.at(i - 10).at(j),
+      //       field.at(i - 9).at(j), field.at(i - 8).at(j),
+      //       field.at(i - 7).at(j), field.at(i - 6).at(j),
+      //       field.at(i - 5).at(j), field.at(i - 4).at(j),
+      //       field.at(i - 3).at(j), field.at(i - 2).at(j),
+      //       field.at(i - 1).at(j), field.at(i - 0).at(j)) {
+      //     penalties.at(2) += 40
+      //   }
+      // }
 
       // Condition 4
       // Just count black modules for now
-      if masked-bits.at(0) {
+      if bit1 {
         cond4-n += 1
       }
     }
@@ -991,21 +996,22 @@
   let p = int((cond4-n / total) * 100)
   let v = (p - calc.rem(p, 5), p + (5 - calc.rem(p, 5)))
   v = v.map(x => calc.quo(calc.abs(x - 50), 5))
-  penalties.at(3) = calc.min(..v) * 10
+  p4 = calc.min(..v) * 10
 
   // calculate sum of condition 1 to 4 panalties
-  return penalties.fold(0, (s, x) => s + x)
+  return (field, p1 + p2 + p3 + p4)
 }
 
 #let best-mask(field, version) = {
   let mask = 0
-  let penalty = check-mask(field, 0, version)
+  let (masked-field, penalty) = check-mask(field, 0, version)
   for m in range(1, masks.len()) {
-    let p = check-mask(field, m, version)
+    let (mf, p) = check-mask(field, m, version)
     if p < penalty {
       mask = m
+      masked-field = mf
       penalty = p
     }
   }
-  return mask
+  return (mask, masked-field)
 }

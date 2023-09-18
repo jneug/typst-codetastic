@@ -614,21 +614,16 @@
   // Masking
   if mask == auto {
     // compute best mask for this code
-    mask = qrutil.best-mask(field, version)
+    (mask, field) = qrutil.best-mask(field, version)
   } else if mask != none {
     // use given mask
     mask = calc.clamp(mask, 0, 7)
-  }
 
-  // apply mask if not none (for debugging)
-  if mask != none {
     for i in range(size) {
       for j in range(size) {
-        //if not qrutil.is-reserved(i, j, version) {
-          field.at(i).at(j) = qrutil.apply-mask(
-            i, j, field.at(i).at(j), mask
-          )
-        //}
+        field.at(i).at(j) = qrutil.apply-mask(
+          i, j, field.at(i).at(j), mask
+        )
       }
     }
   } else {
@@ -652,7 +647,7 @@
     [Version: #version, Ecl: #ecl, Mode: #mode, Mask: #mask]
   }
   // Draw modules
-  util.draw-matrix(
+  util.draw-modules(
     field,
     quiet-zone: quiet-zone,
     size: module-size,
