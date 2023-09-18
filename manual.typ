@@ -13,18 +13,12 @@
 #show: mantys.with(
   ..toml("typst.toml"),
 
-  title: [C#box(baseline:25%, codetastic.qrcode("O", width:1em))detast#box(baseline:10%, rotate(90deg, codetastic.ean5("00000", scale:(.8,.5))))c],
+  title: [C#box(baseline:25%, inset:(x:-.1em), codetastic.qrcode("O", width:1em))detast#box(baseline:10%, inset:(left:-.05em,right:.1em), rotate(90deg, codetastic.ean5("00000", scale:(.8,.5))))c],
   abstract: [
     CODETASTIC draws different kinds of codes in your Typst documents.
     Supported codes include EAN-13 barcodes and QR-Codes.
 
-    The codes are created in Typst and drawn with CeTZ.
-
-    #wbox[
-      Code generation can be quite slow. Large Qr-Codes can take
-      up to a few seconds to compile. Hopefully this can be optimized
-      in future versions.
-    ]
+    The codes are created and drawn in pure Typst.
   ],
 
   titlepage: titlepage.with(toc: false),
@@ -46,5 +40,5 @@
 
 // #show-module("bits")
 
-// #show-module("qrutil", scope:(qrutil: qrutil))
+//#show-module("qrutil", scope:(qrutil: qrutil))
 

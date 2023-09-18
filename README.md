@@ -34,6 +34,13 @@ To compile the manual, Mantys needs to be available as a local package. Refer to
 
 ## Changelog
 
+### Version 0.2.0
+
+- Removed CeTZ as a dependecy.
+	- Now using native Typst drawing functions.
+- Hugh speed improvements for large QR-Codes.
+- Fixed issue with checksum calculation for gtin/ean codes.
+
 ### Version 0.1.0
 
 - Initial release submitted to [typst/packages](https://github.com/typst/packages).

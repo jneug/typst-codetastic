@@ -449,17 +449,28 @@
 // }
 
 
-/// Draws a QR-Code encoding the #arg[data].
+/// Draws a QR-Code encoding #arg[data].
 ///
 /// #example(`#codetastic.qrcode("https://qrcode.com/en")`)
 ///
 /// #wbox[*Some caveats*:\
-/// - Calculating error correction bits is quit slow and unoptimized. The generation of
-///   larger codes can take quit some time.
-/// - Even for smaller codes, the generation is not very fast. Avoid documents with lots
-///   of qr-codes.
-/// - Kanji and ECI encodings are not yet supported. MAybe they will be in the future.
+/// - The generation of larger codes can take quit some time.
+/// - To speed-up compilation times, calculations for the optimal masking patterns don't
+///   the same approach as defined in the qr-code documentation. Codes will still be valid,
+///   but might look differnt than the output of other generators.
+/// - Kanji and ECI encodings are not yet supported. Maybe they will be in the future.
 /// - UTF-8 is not supported.]
+/// #ibox[*Improving speed for larger code versions*:\
+/// Generating qr-codes with large amount of data can take long. Calculating the best
+/// masking pattern to produce the most readable code is currently one of the most
+/// expensive calculations in code creation. This can be mitigated by manually setting
+/// the mask to use. To do so, follow these steps:
+/// - Compile your document while passing #arg(debug: true) to #cmd-[qrcode].
+/// - After compilation finished, look for the code in your output and note the mask
+///   number shown above the code.
+/// - Remove the #arg[debug] argument and set #arg[mask] to the mask number.
+/// Now the code creation will skip detection of the optimal mask and use the passed in
+/// mask. This should speed-up compilation times considerably.]
 ///
 /// - data (string): The data to encode.
 /// - quiet-zone (integer): Whitespace around the code in number of modules. The qr-code standard
