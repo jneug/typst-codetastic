@@ -1,6 +1,4 @@
 
-#import "@preview/cetz:0.1.1"
-
 #import "bits.typ"
 #import "bitfield.typ"
 #import "util.typ"
