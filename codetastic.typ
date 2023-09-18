@@ -94,24 +94,24 @@
   let width = 0.264mm * scale-x
   let height = 18.28mm * scale-x * scale-y
   let font-size = 8pt * scale-x
-  cetz.canvas({
-    import cetz.draw: set-style, line, rect, content
 
+  let txt = text.with(
+    font: "Arial",
+    size: font-size,
+    fill: fg,
+    tracking: font-size * .25
+  )
+
+  util.place-code({
     util.draw-bars(
       encoded,
-      width:width, height:height,
+      bar-width:width, bar-height:height,
       fg:fg, bg:bg
     )
-
-    content(
-      (rel:(0, width), to:"code-bg.top"),
-      anchor:"bottom",
-      text(
-        font: "Arial",
-        size: font-size,
-        fill: fg,
-        code.map(str).join()
-      )
+    util.place-content(
+      0pt, -height - font-size,
+      width * encoded.len(), font-size,
+      txt(code.map(str).join())
     )
   })
 }
@@ -179,66 +179,40 @@
   let width = 0.264mm * scale-x
   let height = 18.28mm * scale-x * scale-y
   let font-size = 6pt * scale-x
-  cetz.canvas({
-    import cetz.draw: set-style, line, rect, content
 
-    let bg-rect = rect.with(fill:bg, stroke:width + bg)
-    let num-content(at, cnt, ..style) = content(
-        at,
-        anchor:"center",
-        text(
-          font: "Arial",
-          size: font-size, // * 1.18,
-          fill: fg,
-          cnt
-        ),
-        ..style
-      )
+  let txt = text.with(
+    font: "Arial",
+    size: font-size,
+    fill: fg,
+    tracking: font-size * .25
+  )
 
+  util.place-code({
     util.draw-bars(
       encoded,
-      width:width, height:height,
+      bar-width:width, bar-height:height,
       fg:fg, bg:bg
     )
-
-    util.draw-rect((14*width, 0), 28*width, font-size, fill:bg, name:"code-left")
-    util.draw-rect((47*width, 0), 28*width, font-size, fill:bg, name:"code-right")
-
+    util.place-content(
+      14 * width, -font-size,
+      28 * width, font-size, fill:bg,
+      txt(code.slice(0,4).map(str).join())
+    )
+    util.place-content(
+      47 * width, -font-size,
+      28 * width, font-size, fill:bg,
+      txt(code.slice(4).map(str).join())
+    )
     if lmi {
-      num-content(
-        (
-          rel:(-8.5*width, 0),
-          to:"code-left.left"
-        ),
-        sym.lt
+      util.place-content(
+        0 * width, -font-size,
+        11 * width, font-size, fill:bg,
+        txt(sym.lt)
       )
-    }
-    for (i, n) in code.slice(0, 4).enumerate() {
-      num-content(
-        (
-          rel:((3.5 + i*7) * width, 0),
-          to:"code-left.left"
-        ),
-        str(n)
-      )
-    }
-    for (i, n) in code.slice(4).enumerate() {
-      num-content(
-        (
-          rel:((3.5 + i*7) * width, 0),
-          to:"code-right.left"
-        ),
-        str(n)
-      )
-    }
-
-    if lmi {
-      num-content(
-        (
-          rel:(6.5*width, 0),
-          to:"code-right.right"
-        ),
-        sym.gt
+      util.place-content(
+        78 * width, -font-size,
+        7 * width, font-size, fill:bg,
+        txt(sym.gt)
       )
     }
   })
@@ -313,64 +287,40 @@
   let width = 0.264mm * scale-x
   let height = 18.28mm * scale-x * scale-y
   let font-size = 6pt * scale-x
-  cetz.canvas({
-    import cetz.draw: set-style, line, rect, content
 
-    let num-content(at, cnt, ..style) = content(
-        at,
-        anchor:"center",
-        text(
-          font: "Arial",
-          size: font-size, // * 1.18,
-          fill: fg,
-          cnt
-        ),
-        ..style
-      )
+  let txt = text.with(
+    font: "Arial",
+    size: font-size,
+    fill: fg,
+    tracking: font-size * .25
+  )
 
+  util.place-code({
     util.draw-bars(
       encoded,
-      width:width, height:height,
+      bar-width:width, bar-height:height,
       fg:fg, bg:bg
     )
-
-
-    util.draw-rect((14*width, 0), 42*width, font-size, name:"code-left")
-    util.draw-rect((61*width, 0), 42*width, font-size, name:"code-right")
-
-    num-content(
-      (
-        rel:(-8.5*width, 0),
-        to:"code-left.left"
-      ),
-      str(first)
+    util.place-content(
+      0 * width, -font-size,
+      11 * width, font-size, fill:bg,
+      txt(str(first))
     )
-    for (i, n) in code.slice(0, 6).enumerate() {
-      num-content(
-        (
-          rel:((3.5 + i*7) * width, 0),
-          to:"code-left.left"
-        ),
-        str(n)
-      )
-    }
-    for (i, n) in code.slice(6).enumerate() {
-      num-content(
-        (
-          rel:((3.5 + i*7) * width, 0),
-          to:"code-right.left"
-        ),
-        str(n)
-      )
-    }
-
+    util.place-content(
+      14 * width, -font-size,
+      42 * width, font-size, fill:bg,
+      txt(code.slice(0, 6).map(str).join())
+    )
+    util.place-content(
+      61 * width, -font-size,
+      42 * width, font-size, fill:bg,
+      txt(code.slice(6).map(str).join())
+    )
     if lmi {
-      num-content(
-        (
-          rel:(6.5*width, 0),
-          to:"code-right.right"
-        ),
-        sym.gt
+      util.place-content(
+        106 * width, -font-size,
+        7 * width, font-size, fill:bg,
+        txt(sym.gt)
       )
     }
   })
@@ -437,74 +387,66 @@
   let width = 0.33mm * scale-x
   let height = 25.9mm * scale-x * scale-y + 5 * width
   let font-size = 5 * width
-  cetz.canvas({
-    import cetz.draw: set-style, line, rect, content
 
-    let num-content(at, cnt, ..style) = content(
-        at,
-        anchor:"center",
-        text(
-          font: "Arial",
-          size: font-size, // * 1.18,
-          fill: fg,
-          cnt
-        ),
-        ..style
-      )
-
-    util.draw-bars(
-      encoded,
-      width:width, height:height,
-      fg:fg, bg:bg
-    )
-
-    util.draw-rect((12*width, 0), 42*width, 5 * width, name:"code-left")
-    util.draw-rect((59*width, 0), 42*width, 5 * width, name:"code-right")
-
-    num-content((
-        rel:(-7.5*width, 0),
-        to:"code-left.left"
-      ), str(code.first()))
-    for (i, n) in code.slice(1, 6).enumerate() {
-      num-content((
-          rel:((7 + i*7) * width, 0),
-          to:"code-left.left"
-        ), str(n))
-    }
-    for (i, n) in code.slice(6, -1).enumerate() {
-      num-content((
-          rel:((7 + i*7) * width, 0),
-          to:"code-right.left"
-        ), str(n))
-    }
-    num-content((
-        rel:(7.5*width, 0),
-        to:"code-right.right"
-      ), str(code.last()))
-  })
-}
-
-#let upc-e(
-  code,
-  scale: 1,
-  colors: (white, black),
-  lmi: false
-) = {}
-
-
-#let data-matrix( data, size: 14, quiet-zone: 1 ) = {
-  // Create matrix with timing and alignment patterns
-  let field = bitfield.new(
-    14, 14,
-    init: (i,j) => {
-      i == 0 or j == 0 or (j == 13 and calc.even(i)) or (i == 13 and calc.even(j))
-    }
+  let txt = text.with(
+    font: "Arial",
+    size: font-size,
+    fill: fg,
+    tracking: font-size * .25
   )
 
-  cetz.canvas({
-    util.draw-matrix(field)
+  util.place-code({
+    util.draw-bars(
+      encoded,
+      bar-width:width, bar-height:height,
+      fg:fg, bg:bg
+    )
+    util.place-content(
+      0 * width, -font-size,
+      9 * width, font-size, fill:bg,
+      txt(str(code.first()))
+    )
+    util.place-content(
+      12 * width, -font-size,
+      42 * width, font-size, fill:bg,
+      txt(code.slice(1, 6).map(str).join())
+    )
+    util.place-content(
+      59 * width, -font-size,
+      42 * width, font-size, fill:bg,
+      txt(code.slice(6, -1).map(str).join())
+    )
+    if lmi {
+      util.place-content(
+        104 * width, -font-size,
+        9 * width, font-size, fill:bg,
+        txt(str(code.last()))
+      )
+    }
   })
 }
+
+// #let upc-e(
+//   code,
+//   scale: 1,
+//   colors: (white, black),
+//   lmi: false
+// ) = {}
+
+
+// #let data-matrix( data, size: 14, quiet-zone: 1 ) = {
+//   // Create matrix with timing and alignment patterns
+//   let field = bitfield.new(
+//     14, 14,
+//     init: (i,j) => {
+//       i == 0 or j == 0 or (j == 13 and calc.even(i)) or (i == 13 and calc.even(j))
+//     }
+//   )
+
+//   util.place-code({
+//     util.draw-modules(field)
+//   })
+// }
 
 
 /// Draws a QR-Code encoding the #arg[data].
@@ -647,10 +589,24 @@
     [Version: #version, Ecl: #ecl, Mode: #mode, Mask: #mask]
   }
   // Draw modules
-  util.draw-modules(
-    field,
-    quiet-zone: quiet-zone,
-    size: module-size,
-    bg: bg, fg: fg
-  )
+  util.place-code({
+    util.draw-modules(
+      field,
+      quiet-zone: quiet-zone,
+      size: module-size,
+      bg: bg, fg: fg
+    )
+  })
 }
+
+// #let micro-qrcode(
+//   data,
+//   quiet-zone: 4,
+//   min-version: 1,
+//   ecl: "l",
+//   mask: auto,
+//   size: auto,
+//   width: auto,
+//   colors: (white, black),
+//   debug: false
+// ) = {}

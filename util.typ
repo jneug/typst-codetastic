@@ -1,6 +1,4 @@
 
-#import "@preview/cetz:0.1.1"
-
 
 #let to-arr(code) = {
   if type(code) == "integer" {
@@ -49,11 +47,21 @@
   return code
 }
 
-#let draw-bars(bits, width:0.264mm, height:18.28mm, bg: white, fg: black) = {
-  import cetz.draw: rect
+#let place-code(cnt) = box(cnt)
 
-  // Draw background rect to set fixed size
-  rect((0,0), (bits.len() * width, height), fill:bg, stroke:none, name:"code-bg")
+#let place-rect(x, y, width, height, fill: black) = place(
+  dx: x, dy:y,
+  rect(width: width, height: height, fill: fill, stroke: .1pt+fill)
+)
+
+#let typst-align = align
+#let place-content(x, y, width, height, cnt, fill:white, align:center+horizon) = place(
+  dx: x, dy:y,
+  block(width: width, height: height, fill: fill, stroke: .1pt+fill, typst-align(align, cnt))
+)
+
+#let draw-bars(bits, bar-width:0.264mm, bar-height:18.28mm, bg: white, fg: black) = {
+  let width = bits.len() * bar-width
 
   // Cluster bits to draw thick bars
   // as one rect
@@ -70,29 +78,30 @@
     c
   })
 
-  // Draw bars
-  let i = 0
-  for bit in bits {
-    if bit > 0 {
-      rect(
-        (i*width,0),
-        (rel:(bit*width,height)),
-        fill:fg, stroke:none
-      )
-      i += bit
-    } else {
-      i += 1
+  let bar(i, n) = place(
+    dx: i * bar-width,
+    rect(width: n * bar-width, height: bar-height, fill:fg, stroke:none)
+  )
+
+  box(
+    width: width,
+    height: bar-height,
+    {
+      place(rect(
+        width: width, height: bar-height,
+        fill:bg, stroke:none
+      ))
+
+      let i = 0
+      for bit in bits {
+        if bit > 0 {
+          bar(i, bit)
+        i += bit
+        } else {
+          i += 1
+        }
+      }
     }
-  }
-}
-
-#let draw-rect(at, width, height, fill: white, ..style) = {
-
-  rect(
-    at,
-    (rel:(width,height)),
-    fill: fill, stroke:none,
-    ..style
   )
 }
 
@@ -120,7 +129,7 @@
   let module(i, j) = place(
     dx: (x + j) * size,
     dy: (y + i) * size,
-    square(size:size, fill:fg, stroke:none)
+    square(size:size, fill:fg, stroke: .1pt+fg)
   )
 
   box(
