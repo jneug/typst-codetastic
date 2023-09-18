@@ -8,7 +8,12 @@
   )
 
   let cs = util.weighted-sum(code.rev(), (3, 1))
-  return 10 - calc.rem(cs, 10)
+  let rem = calc.rem(cs, 10)
+  if rem == 0 {
+    return 0
+  } else {
+    return 10 - calc.rem(cs, 10)
+  }
 }
 
 #let gtin-test(code, checksum:auto, version:auto) = {
