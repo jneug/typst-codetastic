@@ -3,8 +3,9 @@
 
 #let gtin(code) = {
   assert.eq(type(code), "array")
-  assert(code.len() in (4,7,11,12,13),
-    message:"GTIN codes may be 4,7,11,12 or 13 digits long (excluding checksum). Got " + str(code.len())
+  assert(
+    code.len() in (4, 7, 11, 12, 13),
+    message: "GTIN codes may be 4,7,11,12 or 13 digits long (excluding checksum). Got " + str(code.len()),
   )
 
   let cs = util.weighted-sum(code.rev(), (3, 1))
@@ -16,12 +17,12 @@
   }
 }
 
-#let gtin-test(code, checksum:auto, version:auto) = {
+#let gtin-test(code, checksum: auto, version: auto) = {
   assert.eq(type(code), "array")
   if type(version) == "integer" {
     assert.eq(code.len(), version)
   } else {
-    assert(code.len() in (5,8,12,13,14))
+    assert(code.len() in (5, 8, 12, 13, 14))
   }
 
   if checksum == auto {
@@ -40,9 +41,9 @@
   return calc.rem(cs, 10)
 }
 
-#let ean5-test(code, checksum:auto) = {
+#let ean5-test(code, checksum: auto) = {
   assert.eq(type(code), "array")
-  assert.eq(code.len(), if checksum == auto {6} else {5})
+  assert.eq(code.len(), if checksum == auto { 6 } else { 5 })
 
   if checksum == auto {
     checksum = int(code.at(-1))
@@ -59,11 +60,11 @@
   return gtin(code)
 }
 
-#let ean8-test(code, checksum:auto) = {
+#let ean8-test(code, checksum: auto) = {
   assert.eq(type(code), "array")
-  assert.eq(code.len(), if checksum == auto {8} else {7})
+  assert.eq(code.len(), if checksum == auto { 8 } else { 7 })
 
-  return gtin-test(code, checksum:checksum)
+  return gtin-test(code, checksum: checksum)
 }
 
 #let ean13(code) = {
@@ -73,20 +74,18 @@
   return gtin(code)
 }
 
-#let ean13-test(code, checksum:auto) = {
+#let ean13-test(code, checksum: auto) = {
   assert.eq(type(code), "array")
-  assert.eq(code.len(), if checksum == auto {13} else {12})
+  assert.eq(code.len(), if checksum == auto { 13 } else { 12 })
 
-  return gtin-test(code, checksum:checksum)
+  return gtin-test(code, checksum: checksum)
 }
-
 
 #let isbn10(code) = {
   assert.eq(type(code), "array")
   assert.eq(code.len(), 9)
 
-  let cs = util.weighted-sum(code.rev(),
-    (i) => i + 2)
+  let cs = util.weighted-sum(code.rev(), (i) => i + 2)
   cs = 11 - calc.rem(cs, 11)
   if cs < 10 {
     return cs
@@ -95,9 +94,9 @@
   }
 }
 
-#let isbn10-test(code, checksum:auto) = {
+#let isbn10-test(code, checksum: auto) = {
   assert.eq(type(code), "array")
-  assert.eq(code.len(), if checksum == auto {10} else {9})
+  assert.eq(code.len(), if checksum == auto { 10 } else { 9 })
 
   if checksum == auto {
     checksum = int(code.at(-1))
