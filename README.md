@@ -34,6 +34,13 @@ To compile the manual, Mantys needs to be available as a local package. Refer to
 
 ## Changelog
 
+### Version 0.2.1
+
+- qrcodes:
+	- Fixed wrong sizing for `width` key.
+		- The code didn't take the quiet zone into account.
+	- Moved debug information into quiet zone.
+
 ### Version 0.2.0
 
 - Removed CeTZ as a dependecy.
