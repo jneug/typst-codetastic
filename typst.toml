@@ -1,6 +1,6 @@
 [package]
 name = "codetastic"
-version = "0.2.0"
+version = "0.2.1"
 entrypoint = "codetastic.typ"
 authors = ["J. Neugebauer"]
 license = "MIT"
