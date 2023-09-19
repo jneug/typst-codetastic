@@ -6,12 +6,12 @@
 
 For Typst 0.6.0 or later, import the package from the Typst preview repository:
 
-```js
+```typst
 #import "@preview/codetastic:0.2.1"
 ```
 
 After importing the package call any of the code generation functions:
-```js
+```typst
 #import "@preview/codetastic:0.2.1": ean13, qrcode
 
 #ean13(4012345678901)
