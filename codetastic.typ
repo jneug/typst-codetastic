@@ -476,7 +476,10 @@
 /// - min-version (integer): Minimum version for the code. A number between 1 and 40. If #arg[data]
 ///   is to large for the minimum code verison, the next larger verison that fits the data is selected.
 /// - ecl (string): Error correction level. One of #value("l"), #value("m"), #value("q") or #value("h").
-/// - mask (auto, integer): Forces a mask to apply to the code. Number between (0 and 7). For #value(auto) the best mask is selected according to the qr-code standard.
+/// - mask (auto, integer): Forces a mask to apply to the code. Number between (0 and 7).
+/// //  For #value(auto) the best mask is selected according to the qr-code standard.
+///   For #value(auto) the best mask is selected similar to the qr-code standard, but with
+///   some speed improvements, sacrificing accuracy.
 /// - size (auto, length): Size of a modules square.
 /// - width (auto, length): If set to a length, the module size will be adjusted to create a qr-code
 ///   with the given width. Will overwrite any setting for #arg[size].
@@ -588,15 +591,12 @@
 
   // calculate module size
   if width != auto {
-    module-size = width / size
+    module-size = width / (size + 2 * quiet-zone)
   } else if module-size == auto {
     // TODO: calculate reasonable module size from version
     module-size = 2mm
   }
 
-  if debug {
-    [Version: #version, Ecl: #ecl, Mode: #mode, Mask: #mask]
-  }
   // Draw modules
   util.place-code({
     util.draw-modules(
@@ -605,6 +605,15 @@
       size: module-size,
       bg: bg, fg: fg
     )
+    if debug {
+      let font-size = module-size * 2
+      let abs-size = (size + 2*quiet-zone) * module-size
+      util.place-content(
+        0%, -abs-size,
+        auto, font-size,
+        text(font-size, fg.lighten(80%), [version: #version, ecl: #ecl, mode: #mode, mask: #mask, size: #{size}x#size, module size: #repr(module-size), quiet zone: #quiet-zone])
+      )
+    }
   })
 }
 
