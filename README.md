@@ -34,6 +34,11 @@ To compile the manual, Mantys needs to be available as a local package. Refer to
 
 ## Changelog
 
+### Version 0.2.2
+- qrcodes:
+	- Fixed issue with alignment pattern placement.
+	- Removed minimal borders around modules for sharper edges with small module sizes.
+
 ### Version 0.2.1
 
 - qrcodes:
