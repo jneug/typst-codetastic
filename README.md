@@ -1,4 +1,4 @@
-# Codetastic (v0.2.1)
+# Codetastic (v0.2.2)
 
 **Codetastic** is a [Typst](https://github.com/typst/typst) package for drawing barcodes and 2d codes.
 
@@ -7,12 +7,12 @@
 For Typst 0.6.0 or later, import the package from the Typst preview repository:
 
 ```typst
-#import "@preview/codetastic:0.2.1"
+#import "@preview/codetastic:0.2.2"
 ```
 
 After importing the package call any of the code generation functions:
 ```typst
-#import "@preview/codetastic:0.2.1": ean13, qrcode
+#import "@preview/codetastic:0.2.2": ean13, qrcode
 
 #ean13(4012345678901)
 
