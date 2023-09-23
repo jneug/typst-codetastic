@@ -379,6 +379,7 @@
 
 /// >>> qrutil.alignment-positions(1) == ()
 /// >>> qrutil.alignment-positions(2) == (6, 18)
+/// >>> qrutil.alignment-positions(3) == (6, 22)
 /// >>> qrutil.alignment-positions(5) == (6, 30)
 /// >>> qrutil.alignment-positions(7) == (6, 22, 38)
 /// >>> qrutil.alignment-positions(10) == (6, 28, 50)
@@ -404,6 +405,8 @@
 /// Reserved areas are finder, alignment and timing patterns,
 /// spacing and format information, the black module and for higher
 /// versions the version information areas.
+///
+/// Use of this function is discouraged, since it is quite slow.
 ///
 /// >>> qrutil.is-reserved(0, 0, 1)
 /// >>> qrutil.is-reserved(34, 0, 7)
@@ -473,83 +476,17 @@
   "11111"
 ).map(bits.from-str)
 
-#let reserve-bits(field, version) = {
-  let size = size(version)
-
-  // Reserve finder patterns
-  for i in range(8) {
-    for j in range(8) {
-      field.at(i).at(j) = true
-      field.at(i).at(size - j - 1) = true
-      field.at(size - i - 1).at(j) = true
-    }
-  }
-
-  // Reserve spacing around finder
-
-  // Reserve timing patterns
-  for i in range(7, size - 7) {
-    field.at(6).at(i) = true
-    field.at(i).at(6) = true
-  }
-
-  // reserve alignment patterns
-  let alignment-locations = alignment-positions(version)
-  for i in alignment-locations {
-    for j in alignment-locations {
-      if is-valid-alignment(i, j, size) {
-        for k in range(5) {
-          for l in range(5) {
-            field.at(i - 2 + k).at(j - 2 + l) = true
-          }
-        }
-      }
-    }
-  }
-
-  // Reserve dark module
-  field.at(size - 8).at(8) = true
-
-  // AReserve format information
-  for i in range(15) {
-    if i < 7 {
-      field.at(size - i - 1).at(8) = true
-      if i > 5 { i+= 1 }
-      field.at(8).at(i) = true
-    } else {
-      field.at(8).at(size - 15 + i) = true
-      if i > 8 { i += 1 }
-      field.at(15 - i).at(8) = true
-    }
-  }
-
-  // Reserve version information
-  if version >= 7 {
-    for i in range(6) {
-      field.at(size -  9).at(5 - i) = true
-      field.at(size - 10).at(5 - i) = true
-      field.at(size - 11).at(5 - i) = true
-
-      field.at(5 - i).at(size -  9) = true
-      field.at(5 - i).at(size - 10) = true
-      field.at(5 - i).at(size - 11) = true
-    }
-  }
-
-  return field
-}
-
-#let set-reserved-bits(field, version, ecl, mask) = {
+#let set-reserved-bits(field, version, ecl, mask, set-true: false) = {
   let size = size(version)
 
   // Add finder patterns
   for i in range(8) {
     for j in range(8) {
-      let v = false
+      let v = set-true
       if i < 7 and j < 7 {
-        v = finder.at(i).at(j)
+        v = finder.at(i).at(j) or set-true
       }
-      field.at(i).at(j) = v
+      field.at(i).at(j) = v or set-true
       field.at(i).at(size - j - 1) = v
       field.at(size - i - 1).at(j) = v
     }
@@ -557,8 +494,8 @@
 
   // Add timing patterns
   for i in range(7, size - 7) {
-    field.at(6).at(i) = calc.even(i)
-    field.at(i).at(6) = calc.even(i)
+    field.at(6).at(i) = calc.even(i) or set-true
+    field.at(i).at(6) = calc.even(i) or set-true
   }
 
   // Add alignment patterns
@@ -568,7 +505,7 @@
       if is-valid-alignment(i, j, size) {
         for k in range(5) {
           for l in range(5) {
-            field.at(i - 2 + k).at(j - 2 - l) = alignment.at(k).at(l)
+            field.at(i - 2 + k).at(j - 2 + l) = alignment.at(k).at(l) or set-true
           }
         }
       }
@@ -581,6 +518,8 @@
   // Add format information
   let fmt = format-bits(ecl, mask)
   for (i, b) in fmt.enumerate() {
+    b = b or set-true
+
     if i < 7 {
       field.at(size - i - 1).at(8) = b
       if i > 5 { i+= 1 }
@@ -597,18 +536,22 @@
     let fmt = version-bits(version)
 
     for i in range(6) {
-      field.at(size -  9).at(5 - i) = fmt.at(i*3)
-      field.at(size - 10).at(5 - i) = fmt.at(i*3+1)
-      field.at(size - 11).at(5 - i) = fmt.at(i*3+2)
+      field.at(size -  9).at(5 - i) = fmt.at(i*3) or set-true
+      field.at(size - 10).at(5 - i) = fmt.at(i*3+1) or set-true
+      field.at(size - 11).at(5 - i) = fmt.at(i*3+2) or set-true
 
-      field.at(5 - i).at(size -  9) = fmt.at(i*3)
-      field.at(5 - i).at(size - 10) = fmt.at(i*3+1)
-      field.at(5 - i).at(size - 11) = fmt.at(i*3+2)
+      field.at(5 - i).at(size -  9) = fmt.at(i*3) or set-true
+      field.at(5 - i).at(size - 10) = fmt.at(i*3+1) or set-true
+      field.at(5 - i).at(size - 11) = fmt.at(i*3+2) or set-true
     }
   }
 
   return field
 }
+
+#let reserve-bits(field, version) = set-reserved-bits(
+  field, version, "l", 0, set-true: true
+)
 
 
 // =================================
@@ -629,13 +572,6 @@
 /// >>> qrutil.gf-add(2, 3) == 1
 /// >>> qrutil.gf-add(55, 87) == 96
 #let gf-add(a, b) = {
-  // TODO: This is stupid! How can this be made faster?
-  // return bits.to-int(
-  //   bits.xor(
-  //     bits.from-int(x, pad:8),
-  //     bits.from-int(y, pad:8)
-  //   )
-  // )
   return mod2(a+b) + bit(a,b,2) + bit(a,b,4) + bit(a,b,8) + bit(a,b,16) + bit(a,b,32) + bit(a,b,64) + bit(a,b,128)
 }
 
