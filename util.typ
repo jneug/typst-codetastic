@@ -51,13 +51,13 @@
 
 #let place-rect(x, y, width, height, fill: black) = place(
   dx: x, dy:y,
-  rect(width: width, height: height, fill: fill, stroke: .1pt+fill)
+  rect(width: width, height: height, fill: fill, stroke: none)
 )
 
 #let typst-align = align
 #let place-content(x, y, width, height, cnt, fill:white, align:center+horizon) = place(
   dx: x, dy:y,
-  block(width: width, height: height, fill: fill, stroke: .1pt+fill, typst-align(align, cnt))
+  block(width: width, height: height, fill: fill, stroke: none, typst-align(align, cnt))
 )
 
 #let draw-bars(bits, bar-width:0.264mm, bar-height:18.28mm, bg: white, fg: black) = {
@@ -129,7 +129,7 @@
   let module(i, j) = place(
     dx: (x + j) * size,
     dy: (y + i) * size,
-    square(size:size, fill:fg, stroke: .1pt+fg)
+    square(size:size, fill:fg, stroke: none)
   )
 
   box(
