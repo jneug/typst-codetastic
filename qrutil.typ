@@ -308,9 +308,13 @@
 #let encode-byte(chars, buffer) = {
   let code = ()
   let len = chars.len()
+  let codepoints = chars.codepoints()
 
-  for i in range(len) {
-    buffer += bits.from-int( 32 + ASCII.position(chars.at(i)), pad:8 )
+  for cp in codepoints {
+    buffer += bits.from-int(
+      cp.to-unicode(),
+      pad: 8
+    )
 
     while buffer.len() >= 8 {
       code.push( bits.to-int(buffer.slice(0, 8)) )
